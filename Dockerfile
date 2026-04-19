@@ -36,18 +36,21 @@ COPY . .
 # Install PHP dependencies (no dev)
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Create production .env
-RUN cp .env.example .env \
-    && sed -i 's/APP_ENV=local/APP_ENV=production/' .env \
-    && sed -i 's/APP_DEBUG=true/APP_DEBUG=false/' .env \
-    && sed -i 's/APP_NAME=Laravel/APP_NAME=JobAggregator/' .env \
-    && sed -i 's/SESSION_DRIVER=database/SESSION_DRIVER=file/' .env \
-    && sed -i 's/CACHE_STORE=database/CACHE_STORE=file/' .env \
-    && sed -i 's/QUEUE_CONNECTION=database/QUEUE_CONNECTION=sync/' .env \
-    && sed -i 's/LOG_CHANNEL=stack/LOG_CHANNEL=stderr/' .env \
-    && sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=sqlite/' .env \
-    && echo "DB_DATABASE=/var/www/html/database/database.sqlite" >> .env \
-    && echo "CRON_TOKEN=${CRON_TOKEN:-change-me}" >> .env
+# Create production .env from scratch (not from .env.example to avoid any local leaks)
+RUN printf 'APP_NAME=JobAggregator\n\
+APP_ENV=production\n\
+APP_DEBUG=false\n\
+APP_URL=http://localhost\n\
+DB_CONNECTION=sqlite\n\
+DB_DATABASE=/var/www/html/database/database.sqlite\n\
+SESSION_DRIVER=file\n\
+SESSION_LIFETIME=120\n\
+CACHE_STORE=file\n\
+QUEUE_CONNECTION=sync\n\
+LOG_CHANNEL=stderr\n\
+FILESYSTEM_DISK=local\n\
+BROADCAST_CONNECTION=log\n\
+' > .env
 
 # Create SQLite database and set permissions
 RUN mkdir -p database storage/app/public storage/framework/cache/data \
@@ -72,9 +75,8 @@ RUN chmod -R 777 storage bootstrap/cache database
 
 EXPOSE 80
 
-# At startup: cache config with runtime env vars, fix permissions, start Apache
-CMD php artisan config:cache \
-    && php artisan route:cache \
+# At startup: fix permissions, run migrations, start Apache
+# No config:cache — let Laravel read .env + Render env vars directly
+CMD chmod -R 777 database storage bootstrap/cache \
     && php artisan migrate --force \
-    && chmod -R 777 database storage bootstrap/cache \
     && apache2-foreground
