@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -26,7 +27,11 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['location_type', 'experience_level', 'status']);
-            $table->fullText(['title', 'description']);
+
+            // Fulltext indexes only supported by MySQL/MariaDB
+            if (in_array(DB::getDriverName(), ['mysql', 'mariadb'])) {
+                $table->fullText(['title', 'description']);
+            }
         });
     }
 
