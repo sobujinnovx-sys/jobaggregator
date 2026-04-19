@@ -66,9 +66,8 @@ RUN php artisan jobs:scrape || echo "Warning: scrape failed, will retry via cron
 # Pre-cache views only (config/routes cached at boot with runtime env vars)
 RUN php artisan view:cache
 
-# Final permissions — ensure www-data owns everything writable
-RUN chown -R www-data:www-data storage bootstrap/cache database \
-    && chmod -R 775 storage bootstrap/cache database
+# Final permissions — world-writable so any user can access SQLite + storage
+RUN chmod -R 777 storage bootstrap/cache database
 
 EXPOSE 80
 
@@ -76,6 +75,5 @@ EXPOSE 80
 CMD php artisan config:cache \
     && php artisan route:cache \
     && php artisan migrate --force \
-    && chown -R www-data:www-data database storage bootstrap/cache \
-    && chmod -R 775 database storage bootstrap/cache \
+    && chmod -R 777 database storage bootstrap/cache \
     && apache2-foreground
