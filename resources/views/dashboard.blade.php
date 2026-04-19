@@ -73,7 +73,7 @@
     <!-- Local & Remote Buttons -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
         <a href="{{ route('jobs.index', ['region' => 'bd']) }}"
-           class="group relative flex items-center justify-between bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-6 shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200">
+           class="group flex items-center justify-between bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-6 shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200">
             <div class="flex items-center">
                 <div class="bg-white/20 p-4 rounded-xl mr-5">
                     <i class="fas fa-flag text-3xl"></i>
@@ -83,15 +83,17 @@
                     <p class="text-blue-100 text-sm mt-1">Local companies in Bangladesh</p>
                 </div>
             </div>
-            <div class="text-right">
-                <span class="text-4xl font-extrabold">{{ number_format($localJobs) }}</span>
-                <p class="text-blue-200 text-xs mt-1">available now</p>
+            <div class="flex items-center gap-4">
+                <div class="text-right">
+                    <span class="text-4xl font-extrabold">{{ number_format($localJobs) }}</span>
+                    <p class="text-blue-200 text-xs mt-1">available now</p>
+                </div>
+                <i class="fas fa-arrow-right opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200 text-xl"></i>
             </div>
-            <i class="fas fa-arrow-right absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200 text-xl"></i>
         </a>
 
         <a href="{{ route('jobs.index', ['region' => 'global', 'location_type' => 'remote']) }}"
-           class="group relative flex items-center justify-between bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl p-6 shadow-lg hover:shadow-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200">
+           class="group flex items-center justify-between bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl p-6 shadow-lg hover:shadow-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200">
             <div class="flex items-center">
                 <div class="bg-white/20 p-4 rounded-xl mr-5">
                     <i class="fas fa-globe text-3xl"></i>
@@ -101,11 +103,13 @@
                     <p class="text-green-100 text-sm mt-1">Work from anywhere worldwide</p>
                 </div>
             </div>
-            <div class="text-right">
-                <span class="text-4xl font-extrabold">{{ number_format($remoteJobs) }}</span>
-                <p class="text-green-200 text-xs mt-1">available now</p>
+            <div class="flex items-center gap-4">
+                <div class="text-right">
+                    <span class="text-4xl font-extrabold">{{ number_format($remoteJobs) }}</span>
+                    <p class="text-green-200 text-xs mt-1">available now</p>
+                </div>
+                <i class="fas fa-arrow-right opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200 text-xl"></i>
             </div>
-            <i class="fas fa-arrow-right absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200 text-xl"></i>
         </a>
     </div>
 
