@@ -99,6 +99,8 @@ return [
 
     'key' => env('APP_KEY'),
 
+    'cron_token' => env('CRON_TOKEN', 'change-me-to-a-secret'),
+
     'previous_keys' => [
         ...array_filter(
             explode(',', (string) env('APP_PREVIOUS_KEYS', ''))

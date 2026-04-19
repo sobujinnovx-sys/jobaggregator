@@ -7,7 +7,7 @@ services:
     plan: free
     dockerfilePath: ./Dockerfile
     dockerArgs:
-      CACHEBUST: "2"
+      CACHEBUST: "4"
     envVars:
       - key: APP_NAME
         value: JobAggregator
@@ -30,3 +30,5 @@ services:
         value: file
       - key: LOG_CHANNEL
         value: stderr
+      - key: CRON_TOKEN
+        value: 7a777742817b19523acd04a8b7df9b8d

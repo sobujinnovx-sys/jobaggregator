@@ -9,6 +9,15 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminJobController;
 use Illuminate\Support\Facades\Route;
 
+// Cron webhook — called by external cron service (cron-job.org) every hour
+Route::get('/cron/scrape/{token}', function (string $token) {
+    if ($token !== config('app.cron_token')) {
+        abort(403);
+    }
+    Illuminate\Support\Facades\Artisan::call('jobs:scrape');
+    return response()->json(['status' => 'ok', 'output' => Illuminate\Support\Facades\Artisan::output()]);
+});
+
 // Public routes
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/jobs', [JobListingController::class, 'index'])->name('jobs.index');
