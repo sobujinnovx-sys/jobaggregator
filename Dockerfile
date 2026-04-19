@@ -40,6 +40,7 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction
 RUN printf 'APP_NAME=JobAggregator\n\
 APP_ENV=production\n\
 APP_DEBUG=false\n\
+APP_KEY=base64:uSuP9wcJG3/LRCHglTi1ExORd4f86FqswSJgHWehE/U=\n\
 APP_URL=http://localhost\n\
 DB_CONNECTION=sqlite\n\
 DB_DATABASE=/var/www/html/database/database.sqlite\n\
@@ -75,8 +76,7 @@ RUN chmod -R 777 storage bootstrap/cache database
 
 EXPOSE 80
 
-# At startup: generate key if missing, fix permissions, run migrations, start Apache
-CMD php artisan key:generate --force \
-    && chmod -R 777 database storage bootstrap/cache \
+# At startup: fix permissions, run migrations, start Apache
+CMD chmod -R 777 database storage bootstrap/cache \
     && php artisan migrate --force \
     && apache2-foreground

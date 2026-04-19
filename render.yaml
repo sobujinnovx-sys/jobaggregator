@@ -32,3 +32,5 @@ services:
         value: stderr
       - key: CRON_TOKEN
         value: 7a777742817b19523acd04a8b7df9b8d
+      - key: APP_KEY
+        value: base64:uSuP9wcJG3/LRCHglTi1ExORd4f86FqswSJgHWehE/U=
