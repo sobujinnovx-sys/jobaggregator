@@ -51,9 +51,10 @@ RUN mkdir -p database storage/app/public storage/framework/cache/data \
     && chown -R www-data:www-data storage bootstrap/cache database \
     && chmod -R 775 storage bootstrap/cache database
 
-# Generate app key, run migrations, seed
+# Generate app key, run migrations, seed, scrape real jobs
 RUN php artisan key:generate --force \
-    && php artisan migrate --force --seed
+    && php artisan migrate --force --seed \
+    && php artisan jobs:scrape
 
 # Cache config and routes for production
 RUN php artisan config:cache \
