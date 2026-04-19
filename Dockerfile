@@ -75,8 +75,8 @@ RUN chmod -R 777 storage bootstrap/cache database
 
 EXPOSE 80
 
-# At startup: fix permissions, run migrations, start Apache
-# No config:cache — let Laravel read .env + Render env vars directly
-CMD chmod -R 777 database storage bootstrap/cache \
+# At startup: generate key if missing, fix permissions, run migrations, start Apache
+CMD php artisan key:generate --force \
+    && chmod -R 777 database storage bootstrap/cache \
     && php artisan migrate --force \
     && apache2-foreground
