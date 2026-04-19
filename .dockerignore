@@ -1,0 +1,12 @@
+/node_modules
+/vendor
+/.env
+/.git
+/.gitignore
+/storage/logs/*
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/tests
+/.vscode
+check_bd_jobs.php

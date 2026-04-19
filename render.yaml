@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: jobaggregator
+    runtime: docker
+    repo: https://github.com/sobujinnovx-sys/jobaggregator.git
+    branch: main
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: APP_NAME
+        value: JobAggregator
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        fromService:
+          type: web
+          name: jobaggregator
+          property: host
+      - key: DB_CONNECTION
+        value: sqlite
+      - key: DB_DATABASE
+        value: /var/www/html/database/database.sqlite
+      - key: SESSION_DRIVER
+        value: file
+      - key: CACHE_STORE
+        value: file
+      - key: LOG_CHANNEL
+        value: stderr
