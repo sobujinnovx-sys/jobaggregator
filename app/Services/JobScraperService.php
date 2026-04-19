@@ -106,6 +106,7 @@ class JobScraperService
         $this->scrapeHimalayas();
         $this->scrapeGreenhouse();
         $this->scrapeLever();
+        $this->scrapeLinkedInBd();
         $this->scrapeBdCareerPages();
         return $this->results();
     }
@@ -124,6 +125,7 @@ class JobScraperService
     public function scrapeBangladesh(): array
     {
         $this->reset();
+        $this->scrapeLinkedInBd();
         $this->scrapeBdCareerPages();
         return $this->results();
     }
@@ -507,6 +509,105 @@ class JobScraperService
         }
 
         $this->log("   📊 Lever total: {$totalCount} new jobs");
+    }
+
+    // ─── Indeed Bangladesh RSS Scraper ────────────────────────
+
+    protected function scrapeLinkedInBd(): void
+    {
+        $this->log('📡 Scraping LinkedIn Bangladesh jobs...');
+        $totalCount = 0;
+
+        $keywords = [
+            'software developer', 'software engineer', 'web developer',
+            'data analyst', 'mobile developer', 'devops engineer',
+            'ui ux designer', 'project manager', 'qa engineer',
+            'network engineer', 'database administrator', 'system administrator',
+            'frontend developer', 'backend developer', 'full stack developer',
+            'python developer', 'java developer', 'php developer',
+            'it support', 'cybersecurity', 'cloud engineer',
+            'product manager', 'business analyst', 'machine learning',
+            'graphic designer', 'marketing manager', 'accountant',
+        ];
+
+        $seenUrls = [];
+
+        foreach ($keywords as $keyword) {
+            try {
+                $encoded = urlencode($keyword);
+                $url = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords={$encoded}&location=Bangladesh&start=0";
+
+                $response = Http::timeout(15)
+                    ->withHeaders([
+                        'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    ])
+                    ->get($url);
+
+                if (!$response->ok()) continue;
+
+                $html = $response->body();
+                $dom = new \DOMDocument();
+                @$dom->loadHTML('<?xml encoding="UTF-8">' . mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
+                $xpath = new \DOMXPath($dom);
+
+                $cards = $xpath->query('//div[contains(@class,"base-search-card")]');
+
+                foreach ($cards as $card) {
+                    $titleNode = $xpath->query('.//h3[contains(@class,"base-search-card__title")]', $card);
+                    $companyNode = $xpath->query('.//h4[contains(@class,"base-search-card__subtitle")]//a', $card);
+                    $locationNode = $xpath->query('.//*[contains(@class,"job-search-card__location")]', $card);
+                    $linkNode = $xpath->query('.//a[contains(@class,"base-card__full-link")]', $card);
+                    $dateNode = $xpath->query('.//time', $card);
+
+                    $title = $titleNode->length ? trim($titleNode->item(0)->textContent) : '';
+                    $company = $companyNode->length ? trim($companyNode->item(0)->textContent) : 'Unknown Company';
+                    $location = $locationNode->length ? trim($locationNode->item(0)->textContent) : 'Bangladesh';
+                    $link = $linkNode->length ? $linkNode->item(0)->getAttribute('href') : '';
+                    $date = $dateNode->length ? $dateNode->item(0)->getAttribute('datetime') : null;
+
+                    if (empty($title) || empty($link)) continue;
+
+                    // Clean URL - remove tracking params
+                    if (str_contains($link, '?')) {
+                        $link = substr($link, 0, strpos($link, '?'));
+                    }
+
+                    if (isset($seenUrls[$link])) continue;
+                    $seenUrls[$link] = true;
+
+                    // Ensure location includes Bangladesh
+                    if (!str_contains(strtolower($location), 'bangladesh')) {
+                        $location .= ', Bangladesh';
+                    }
+
+                    $saved = $this->saveJob([
+                        'title'            => $title,
+                        'company_name'     => $company,
+                        'company_website'  => null,
+                        'description'      => 'Apply on LinkedIn for full details.',
+                        'apply_link'       => $link,
+                        'location'         => $location,
+                        'location_type'    => 'onsite',
+                        'salary_range'     => null,
+                        'experience_level' => $this->guessExperience($title),
+                        'category_hint'    => '',
+                        'tags'             => [],
+                        'source'           => 'bd_career',
+                        'external_id'      => 'linkedin_bd_' . md5($link),
+                        'posted_at'        => $date,
+                    ]);
+                    if ($saved) $totalCount++;
+                }
+
+                // Small delay between requests
+                usleep(300000);
+
+            } catch (\Exception $e) {
+                continue;
+            }
+        }
+
+        $this->log("   📊 LinkedIn Bangladesh: {$totalCount} new jobs");
     }
 
     // ─── Bangladesh Career Page Scrapers ────────────────────────
