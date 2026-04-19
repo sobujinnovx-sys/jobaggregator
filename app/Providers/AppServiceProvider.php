@@ -19,6 +19,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Vercel serverless: ensure /tmp directories exist for compiled views
+        if (env('VERCEL')) {
+            $viewPath = env('VIEW_COMPILED_PATH', '/tmp/views');
+            if (!is_dir($viewPath)) {
+                mkdir($viewPath, 0755, true);
+            }
+        }
     }
 }
