@@ -378,7 +378,7 @@ class JobScraperService
                     'location'         => $location,
                     'location_type'    => 'remote',
                     'salary_range'     => $this->formatHimalayasSalary($job),
-                    'experience_level' => $this->guessExperience($job['title'] ?? '', $job['seniority'] ?? null),
+                    'experience_level' => $this->guessExperience($job['title'] ?? '', is_string($job['seniority'] ?? null) ? $job['seniority'] : null),
                     'category_hint'    => is_array($job['categories'] ?? null) ? implode(', ', $job['categories']) : '',
                     'tags'             => [],
                     'source'           => 'himalayas',

@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y \
     git curl zip unzip libpng-dev libjpeg-dev libfreetype6-dev \
     libonig-dev libxml2-dev libpq-dev libsqlite3-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_pgsql pdo_sqlite mbstring exif pcntl bcmath gd xml \
+    && docker-php-ext-install pdo pdo_mysql pdo_pgsql pdo_sqlite mbstring exif pcntl bcmath gd xml \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Enable Apache mod_rewrite
@@ -45,8 +45,9 @@ RUN cp .env.example .env \
     && sed -i 's/CACHE_STORE=database/CACHE_STORE=file/' .env \
     && sed -i 's/QUEUE_CONNECTION=database/QUEUE_CONNECTION=sync/' .env \
     && sed -i 's/LOG_CHANNEL=stack/LOG_CHANNEL=stderr/' .env \
+    && sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=sqlite/' .env \
     && echo "DB_DATABASE=/var/www/html/database/database.sqlite" >> .env \
-    && echo "CRON_TOKEN=\${CRON_TOKEN:-change-me}" >> .env
+    && echo "CRON_TOKEN=${CRON_TOKEN:-change-me}" >> .env
 
 # Create SQLite database and set permissions
 RUN mkdir -p database storage/app/public storage/framework/cache/data \
