@@ -21,7 +21,9 @@ class DashboardController extends Controller
         $topCompanies = Company::withCount(['jobListings' => function ($q) {
             $q->where('status', 'approved');
         }])
-            ->having('job_listings_count', '>', 0)
+            ->whereHas('jobListings', function ($q) {
+                $q->where('status', 'approved');
+            })
             ->orderByDesc('job_listings_count')
             ->take(5)
             ->get();
