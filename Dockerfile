@@ -27,6 +27,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
+# Cache bust to force rebuild
+ARG CACHEBUST=1
+
 # Copy application
 COPY . .
 
@@ -54,7 +57,11 @@ RUN mkdir -p database storage/app/public storage/framework/cache/data \
 # Generate app key, run migrations, seed, scrape real jobs
 RUN php artisan key:generate --force \
     && php artisan migrate --force --seed \
-    && php artisan jobs:scrape
+    && echo "=== BD jobs after seed ===" \
+    && php artisan tinker --execute="echo App\Models\JobListing::where('source','bd_career')->count().' BD jobs seeded';" \
+    && php artisan jobs:scrape \
+    && echo "=== BD jobs after scrape ===" \
+    && php artisan tinker --execute="echo App\Models\JobListing::where('source','bd_career')->count().' BD jobs total';"
 
 # Cache config and routes for production
 RUN php artisan config:cache \
