@@ -44,8 +44,7 @@ class DatabaseSeeder extends Seeder
             Category::firstOrCreate(['slug' => $category['slug']], $category);
         }
 
-        // BD jobs are populated by the scraper (Indeed BD RSS + career pages)
+        // BD jobs are populated by the scraper (LinkedIn BD + career pages)
         // Run `php artisan jobs:scrape` to populate real listings
     }
-}
 }
