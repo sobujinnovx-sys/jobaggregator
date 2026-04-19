@@ -547,7 +547,7 @@ class JobScraperService
 
                 $html = $response->body();
                 $dom = new \DOMDocument();
-                @$dom->loadHTML('<?xml encoding="UTF-8">' . mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
+                @$dom->loadHTML('<?xml encoding="UTF-8">' . $html);
                 $xpath = new \DOMXPath($dom);
 
                 $cards = $xpath->query('//div[contains(@class,"base-search-card")]');

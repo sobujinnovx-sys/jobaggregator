@@ -44,7 +44,9 @@ RUN cp .env.example .env \
     && sed -i 's/SESSION_DRIVER=database/SESSION_DRIVER=file/' .env \
     && sed -i 's/CACHE_STORE=database/CACHE_STORE=file/' .env \
     && sed -i 's/QUEUE_CONNECTION=database/QUEUE_CONNECTION=sync/' .env \
-    && sed -i 's/LOG_CHANNEL=stack/LOG_CHANNEL=stderr/' .env
+    && sed -i 's/LOG_CHANNEL=stack/LOG_CHANNEL=stderr/' .env \
+    && echo "DB_DATABASE=/var/www/html/database/database.sqlite" >> .env \
+    && echo "CRON_TOKEN=\${CRON_TOKEN:-change-me}" >> .env
 
 # Create SQLite database and set permissions
 RUN mkdir -p database storage/app/public storage/framework/cache/data \
@@ -54,14 +56,12 @@ RUN mkdir -p database storage/app/public storage/framework/cache/data \
     && chown -R www-data:www-data storage bootstrap/cache database \
     && chmod -R 775 storage bootstrap/cache database
 
-# Generate app key, run migrations, seed, scrape real jobs
+# Generate app key, run migrations, seed
 RUN php artisan key:generate --force \
-    && php artisan migrate --force --seed \
-    && echo "=== BD jobs after seed ===" \
-    && php artisan tinker --execute="echo App\Models\JobListing::where('source','bd_career')->count().' BD jobs seeded';" \
-    && php artisan jobs:scrape \
-    && echo "=== BD jobs after scrape ===" \
-    && php artisan tinker --execute="echo App\Models\JobListing::where('source','bd_career')->count().' BD jobs total';"
+    && php artisan migrate --force --seed
+
+# Scrape real jobs (non-blocking — build succeeds even if scraping fails)
+RUN php artisan jobs:scrape || echo "Warning: scrape failed, will retry via cron"
 
 # Cache config and routes for production
 RUN php artisan config:cache \
