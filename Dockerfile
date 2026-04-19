@@ -63,12 +63,10 @@ RUN php artisan key:generate --force \
 # Scrape real jobs (non-blocking — build succeeds even if scraping fails)
 RUN php artisan jobs:scrape || echo "Warning: scrape failed, will retry via cron"
 
-# Cache config and routes for production
-RUN php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache
+# Pre-cache views only (config/routes cached at boot with runtime env vars)
+RUN php artisan view:cache
 
 EXPOSE 80
 
-# Start script: re-run migrations on boot (for fresh containers), then start Apache
-CMD php artisan migrate --force && apache2-foreground
+# At startup: cache config with runtime env vars, run migrations, start Apache
+CMD php artisan config:cache && php artisan route:cache && php artisan migrate --force && apache2-foreground
