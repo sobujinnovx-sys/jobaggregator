@@ -36,22 +36,8 @@ COPY . .
 # Install PHP dependencies (no dev)
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Create production .env from scratch (not from .env.example to avoid any local leaks)
-RUN printf 'APP_NAME=JobAggregator\n\
-APP_ENV=production\n\
-APP_DEBUG=false\n\
-APP_KEY=base64:uSuP9wcJG3/LRCHglTi1ExORd4f86FqswSJgHWehE/U=\n\
-APP_URL=http://localhost\n\
-DB_CONNECTION=sqlite\n\
-DB_DATABASE=/var/www/html/database/database.sqlite\n\
-SESSION_DRIVER=file\n\
-SESSION_LIFETIME=120\n\
-CACHE_STORE=file\n\
-QUEUE_CONNECTION=sync\n\
-LOG_CHANNEL=stderr\n\
-FILESYSTEM_DISK=local\n\
-BROADCAST_CONNECTION=log\n\
-' > .env
+# Create .env from template; production values are provided at runtime via platform env vars
+RUN cp .env.example .env
 
 # Create SQLite database and set permissions
 RUN mkdir -p database storage/app/public storage/framework/cache/data \
@@ -78,5 +64,6 @@ EXPOSE 80
 
 # At startup: fix permissions, run migrations, start Apache
 CMD chmod -R 777 database storage bootstrap/cache \
+    && if [ -z "${APP_KEY:-}" ] && ! grep -q '^APP_KEY=base64:' .env 2>/dev/null; then php artisan key:generate --force; fi \
     && php artisan migrate --force \
     && apache2-foreground
